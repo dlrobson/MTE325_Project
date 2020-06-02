@@ -2,9 +2,9 @@
 Drivers*
 
 # Document files
-.pdf
-.doc
-.docx
+*.pdf
+*.doc
+*.docx
 
 # Keil Files
 **/*.aux
