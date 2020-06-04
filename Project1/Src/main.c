@@ -56,12 +56,12 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
-
+  HAL_InitTick(0);
   /* Configure the system clock to 4 MHz */
   SystemClock_Config();
 
   /* -1- Initialize LEDs mounted on STM32L476G-Discovery board */
-  BSP_LED_Init(LED4);
+  BSP_LED_Init(LED_GREEN);
 
   /* -2- Configure EXTI_Line0 (connected to PA.0 pin) in interrupt mode */
   EXTI0_IRQHandler_Config();
@@ -170,7 +170,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   if (GPIO_Pin == GPIO_PIN_0)
   {
     /* Toggle LED4 */
-    BSP_LED_Toggle(LED4);
+    BSP_LED_Toggle(LED_GREEN);
+    HAL_Delay(1000);
   }
 }
 
