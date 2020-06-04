@@ -56,6 +56,7 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
+  /* Initializes the Clock tick to the highest priority */  
   HAL_InitTick(0);
   /* Configure the system clock to 4 MHz */
   SystemClock_Config();
@@ -64,11 +65,24 @@ int main(void)
   BSP_LED_Init(LED_GREEN);
 
   /* -2- Configure EXTI_Line0 (connected to PA.0 pin) in interrupt mode */
-  EXTI0_IRQHandler_Config();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /* Configure PA.5 pin as input floating */
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
+  GPIO_InitStructure.Pin = GPIO_PIN_5;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 
   /* Infinite loop */
   while (1)
   {
+    // Read pin PA.5 val
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5))
+    {
+      /* Toggle LED4 */
+      BSP_LED_Toggle(LED_GREEN);
+      HAL_Delay(1000);
+    }
   }
 }
 
@@ -144,14 +158,14 @@ void SystemClock_Config(void)
   */
 static void EXTI0_IRQHandler_Config(void)
 {
-  GPIO_InitTypeDef   GPIO_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStructure;
 
   /* Enable GPIOA clock */
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /* Configure PA.0 pin as input floating */
+  /* Configure PA.5 pin as input floating */
   GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStructure.Pull = GPIO_NOPULL;
+  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
   GPIO_InitStructure.Pin = GPIO_PIN_0;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 
