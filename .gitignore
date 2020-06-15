@@ -11,9 +11,12 @@ Drivers*
 **/*.log
 **/*.gz
 
-**/MDK-ARM/Project.uvguix.*
+**/MDK-ARM/*.uvguix.*
 **/MDK-ARM/*.scvd
 **/MDK-ARM/*.lst
+**/MDK-ARM/*.crf
+**/MDK-ARM/*.dep
+**/MDK-ARM/Debug/*.*
 **/MDK-ARM/DebugConfig/*.*
 **/MDK-ARM/STM32L476G-Discovery/*.*
 **/.metadata/*.*
