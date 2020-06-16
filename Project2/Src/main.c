@@ -112,8 +112,8 @@ int main(void)
   while (1)
   {
 		#ifdef polling
-		/* TODO
-		* Ex. 3.1 Write your polling code here by 
+		/* 
+		* TODO: Ex. 3.1 Write your polling code here by 
 		*  1. Tight poll for the red LED to be on
 		*	 2. Read the timer 3 value 
 		*	 3. Turn the LED off again (the timer code turns it on)
@@ -135,7 +135,7 @@ int main(void)
       HAL_GPIO_WritePin(GPIOB, LD_R_Pin, GPIO_PIN_RESET);
       timer_count++;
     }
-		#else
+    #else
 		/* TODO
 		* Ex. 3.2 Write your interrupt code by 
 		*  1. Reseting the timer 3 count to 0 
@@ -146,13 +146,11 @@ int main(void)
 		*  the count values you need
 		*/
 
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_5);
 	
 		#endif
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
 /**
@@ -597,13 +595,16 @@ static void MX_GPIO_Init(void)
 	* Ex 3.2 You will need to enable the interrupt handler for the line
 	* you are using here
 	*/
-	
-
+  // NVIC_PriorityGroupConfig();
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  // /* Configure PA.5 pin */  
+  // GPIO_InitStruct.Pin = GPIO_PIN_5;  
+  // GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
+  // GPIO_InitStruct.Pull = GPIO_PULLDOWN;  
+  // HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);  
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.

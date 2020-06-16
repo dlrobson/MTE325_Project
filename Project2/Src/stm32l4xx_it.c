@@ -199,6 +199,7 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
 
+uint8_t timer_count = 0;
 /**
   * @brief This function handles EXTI line[9:5] interrupts.
   */
@@ -210,12 +211,17 @@ void EXTI9_5_IRQHandler(void)
 	* for interrupts
 	*
 	*/
-  /* USER CODE END EXTI9_5_IRQn 0 */
+  if (timer_count < 10)
+  {
+    uint8_t timer_reading = __HAL_TIM_GET_COUNTER(&htim3);
+
+    // Sample code to print a number, use is optional
+    HAL_UART_Transmit(&huart2, num2hex(timer_reading, WORD_F), 4, 0xFFFF);
+    HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
+
+    timer_count++;
+  }
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
-  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
-
-
-  /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
 /**
@@ -226,7 +232,7 @@ void TIM2_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim2);
 
 	#ifdef polling
-	/* Ex 3.1
+	/* TODO Ex 3.1
 	* 1. Turn on the LED, which marks the start of the event
 	* you are polling for. 
 	* 2. Reset timer 3 to a count of 0
