@@ -102,11 +102,13 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim3);
   
   //Print something to test UART
-  USART_Transmit(&huart2, "Hello World/n/r");
+  USART_Transmit(&huart2, "Hello World\n\r");
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  // Stores how many readings have been made
+  int timer_count = 0;
+  const int MAX_NUM_OF_POLL = 10;
   while (1)
   {
 		#ifdef polling
@@ -119,11 +121,20 @@ int main(void)
 		*  It is up to you to decide how you are going to transmit and/or store
 		*  the count values you need
 		*/
-		
-				
-		// Sample code to print a number, use is optional
-		HAL_UART_Transmit(&huart2, num2hex(count, WORD_F) ,4, 0xFFFF);
-		HAL_UART_Transmit(&huart2, "\n\r" ,2, 0xFFFF);
+
+    // If the Pin has been set, then the Red LED is on. PB.2
+    // Only collect the results from the first 10 runs.
+		if (timer_count < MAX_NUM_OF_POLL && HAL_GPIO_ReadPin(GPIOB, LD_R_Pin))
+    {
+      uint8_t timer_reading = __HAL_TIM_GET_COUNTER(&htim3);
+
+      // Sample code to print a number, use is optional
+      HAL_UART_Transmit(&huart2, num2hex(timer_reading, WORD_F), 4, 0xFFFF);
+      HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
+
+      HAL_GPIO_WritePin(GPIOB, LD_R_Pin, GPIO_PIN_RESET);
+      timer_count++;
+    }
 		#else
 		/* TODO
 		* Ex. 3.2 Write your interrupt code by 

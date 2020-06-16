@@ -223,23 +223,20 @@ void EXTI9_5_IRQHandler(void)
   */
 void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-
-  /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
 
 	#ifdef polling
-	/* TODO Ex 3.1
+	/* Ex 3.1
 	* 1. Turn on the LED, which marks the start of the event
 	* you are polling for. 
 	* 2. Reset timer 3 to a count of 0
 	*
 	*/
 
-	#endif
+  HAL_GPIO_WritePin(GPIOB, LD_R_Pin, GPIO_PIN_SET);
+  __HAL_TIM_SET_COUNTER(&htim3, 0);
 
-  /* USER CODE END TIM2_IRQn 1 */
+	#endif
 }
 
 /**
