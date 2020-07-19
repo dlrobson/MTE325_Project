@@ -33,6 +33,9 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart.h"
+#include "stm32l476g_discovery.h"
+#include "stm32l476g_discovery_gyroscope.h"
+#include "stm32l476g_discovery_glass_lcd.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -58,7 +61,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define polling //TODO Ex 3.2 comment out this line when running interrupts
+#define polling //TODO comment out this line when running interrupts
 
 #define SAI1_MCK_Pin GPIO_PIN_2
 #define SAI1_MCK_GPIO_Port GPIOE

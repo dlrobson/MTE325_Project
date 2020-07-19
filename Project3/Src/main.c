@@ -42,21 +42,17 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint32_t count = 10;
+uint8_t count = 10;
+float pfData[3];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -73,7 +69,7 @@ static void MX_TIM3_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -95,62 +91,45 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-	HAL_TIM_Base_Start_IT(&htim2);
-	HAL_TIM_Base_Start_IT(&htim3);
   
+	
+	BSP_GYRO_Init();
+	
   //Print something to test UART
-  USART_Transmit(&huart2, "Hello World\n\r");
+  USART_Transmit(&huart2, "Hello World/n/r");
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  // Stores how many readings have been made
-  int timer_count = 0;
-  const int MAX_NUM_OF_POLL = 10;
+  /* USER CODE BEGIN WHILE */
   while (1)
   {
-		#ifdef polling
-		/* 
-		* TODO: Ex. 3.1 Write your polling code here by 
-		*  1. Tight poll for the red LED to be on
-		*	 2. Read the timer 3 value 
-		*	 3. Turn the LED off again (the timer code turns it on)
-		*  
-		*  It is up to you to decide how you are going to transmit and/or store
-		*  the count values you need
-		*/
 
-    // If the Pin has been set, then the Red LED is on. PB.2
-    // Only collect the results from the first 10 runs.
-		if (timer_count < MAX_NUM_OF_POLL && HAL_GPIO_ReadPin(GPIOB, LD_R_Pin))
-    {
-      uint8_t timer_reading = __HAL_TIM_GET_COUNTER(&htim3);
+		HAL_Delay(1000);
+		
+		//TODO: Ex 3.1 To verfiy your SPI settings are correct, run the debugger
+		// add pfData to your watch window and verify that the values change as you rotate the board
+		// values are in degrees per second
+		// readings under +/- 5 are normal for the board sitting stationary
+		// if you move the board around while reading you should see a change in values
+		BSP_GYRO_GetXYZ(&pfData[0]);
+		
+		
 
-      // Sample code to print a number, use is optional
-      HAL_UART_Transmit(&huart2, num2hex(timer_reading, WORD_F), 4, 0xFFFF);
-      HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
+				
+		// Sample code to print a number, use is optional
+		HAL_UART_Transmit(&huart2, num2hex(count, BYTE_F) ,2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, "\n\r" ,2, 0xFFFF);
 
-      HAL_GPIO_WritePin(GPIOB, LD_R_Pin, GPIO_PIN_RESET);
-      timer_count++;
-    }
-    #else
-		/* TODO
-		* Ex. 3.2 Write your interrupt code by 
-		*  1. Reseting the timer 3 count to 0 
-		*	 2. Forcing an interrupt on the JOY_DOWN button from software
-		*	 3. Reading the timer 3 value in the corresponding interrupt handler
-		*  
-		*  It is up to you to decide how you are going to transmit and/or store
-		*  the count values you need
-		*/
+		//Todo: Ex. 3.3 print your delta temp since startup to the display
+		// you are welcome to declare a function and call it here if you prefer
 
-    __HAL_TIM_SET_COUNTER(&htim3, 0);
-    __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_5);
-	
-		#endif
+		
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -201,135 +180,9 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
 
-  /* USER CODE BEGIN TIM2_Init 0 */
 
-  /* USER CODE END TIM2_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  // 42,43 all 000B 44 just 000B and 000E, 45 we see that variance
-  htim2.Init.Prescaler = 44;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 200;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_ClearInputConfigTypeDef sClearInputConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClearInputConfig.ClearInputState = ENABLE;
-  sClearInputConfig.ClearInputSource = TIM_CLEARINPUTSOURCE_OCREFCLR;
-  if (HAL_TIM_ConfigOCrefClear(&htim3, &sClearInputConfig, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 200;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
 static void MX_USART2_UART_Init(void)
 {
 
@@ -593,19 +446,16 @@ static void MX_GPIO_Init(void)
 
   /* EXTI interrupt init*/
 	/* TODO
-	* Ex 3.2 You will need to enable the interrupt handler for the line
+	* You will need to enable the interrupt handler for the line
 	* you are using here
 	*/
-  // NVIC_PriorityGroupConfig();
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  // /* Configure PA.5 pin */  
-  // GPIO_InitStruct.Pin = GPIO_PIN_5;  
-  // GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  // GPIO_InitStruct.Pull = GPIO_PULLDOWN;  
-  // HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);  
+	
+
 }
 
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
