@@ -47,6 +47,8 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 uint8_t count = 10;
 float pfData[3];
+char buffer[16];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,40 +70,24 @@ static void MX_USART2_UART_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-	
-  /* USER CODE END 1 */
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  /* USER CODE BEGIN 2 */
-  
-	
 	BSP_GYRO_Init();
-	
+	BSP_LCD_GLASS_Init();
+  
   //Print something to test UART
   USART_Transmit(&huart2, "Hello World\n\r");
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  uint8_t temp_data = 0;
+  // BSP_LCD_GLASS_DisplayString(string)
   while (1)
   {
 
@@ -114,21 +100,19 @@ int main(void)
 		// if you move the board around while reading you should see a change in values
 		BSP_GYRO_GetXYZ(&pfData[0]);
 		
+    BSP_GYRO_GetTemp(&temp_data);
+    HAL_UART_Transmit(&huart2, (uint8_t*)buffer, sprintf(buffer, "%d", temp_data), 500);
+
 		// Sample code to print a number, use is optional
-		HAL_UART_Transmit(&huart2, num2hex(count, pfData[0]), 2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, "\t", 2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, num2hex(count, pfData[1]), 2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, "\t", 2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, num2hex(count, pfData[2]), 2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
+		// HAL_UART_Transmit(&huart2, num2hex(count, BYTE_F), 2, 0xFFFF);
+
+	HAL_UART_Transmit(&huart2, "\xB0", 2, 0xFFFF);
+	HAL_UART_Transmit(&huart2, "C", 2, 0xFFFF);
+	HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
 
 		//Todo: Ex. 3.3 print your delta temp since startup to the display
 		// you are welcome to declare a function and call it here if you prefer
-
-		
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+  
   }
   /* USER CODE END 3 */
 }
