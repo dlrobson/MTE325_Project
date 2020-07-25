@@ -97,7 +97,7 @@ int main(void)
 	BSP_GYRO_Init();
 	
   //Print something to test UART
-  USART_Transmit(&huart2, "Hello World/n/r");
+  USART_Transmit(&huart2, "Hello World\n\r");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,12 +114,13 @@ int main(void)
 		// if you move the board around while reading you should see a change in values
 		BSP_GYRO_GetXYZ(&pfData[0]);
 		
-		
-
-				
 		// Sample code to print a number, use is optional
-		HAL_UART_Transmit(&huart2, num2hex(count, BYTE_F) ,2, 0xFFFF);
-		HAL_UART_Transmit(&huart2, "\n\r" ,2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, num2hex(count, pfData[0]), 2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, "\t", 2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, num2hex(count, pfData[1]), 2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, "\t", 2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, num2hex(count, pfData[2]), 2, 0xFFFF);
+		HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
 
 		//Todo: Ex. 3.3 print your delta temp since startup to the display
 		// you are welcome to declare a function and call it here if you prefer
