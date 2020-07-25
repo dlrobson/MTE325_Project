@@ -87,9 +87,14 @@ int main(void)
   //Print something to test UART
   USART_Transmit(&huart2, "Hello World\n\r");
   uint8_t temp_data = 0;
-  // BSP_LCD_GLASS_DisplayString(string)
+  uint8_t init_temp;
+  BSP_GYRO_GetTemp(&init_temp);
+
+  // char display_vals[4];
+  int temp_delta = 0;
   while (1)
   {
+    // BSP_LCD_GLASS_DisplayString(string)
 
 		HAL_Delay(1000);
 		
@@ -101,14 +106,7 @@ int main(void)
 		BSP_GYRO_GetXYZ(&pfData[0]);
 		
     BSP_GYRO_GetTemp(&temp_data);
-    HAL_UART_Transmit(&huart2, (uint8_t*)buffer, sprintf(buffer, "%d", temp_data), 500);
-
-		// Sample code to print a number, use is optional
-		// HAL_UART_Transmit(&huart2, num2hex(count, BYTE_F), 2, 0xFFFF);
-
-	HAL_UART_Transmit(&huart2, "\xB0", 2, 0xFFFF);
-	HAL_UART_Transmit(&huart2, "C", 2, 0xFFFF);
-	HAL_UART_Transmit(&huart2, "\n\r", 2, 0xFFFF);
+    HAL_UART_Transmit(&huart2, (uint8_t*)buffer, sprintf(buffer, "%d\xB0%c\n\r", temp_data, 'C'), 500);
 
 		//Todo: Ex. 3.3 print your delta temp since startup to the display
 		// you are welcome to declare a function and call it here if you prefer
