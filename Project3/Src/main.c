@@ -47,7 +47,6 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 uint8_t count = 10;
 float pfData[3];
-char buffer[16];
 
 /* USER CODE END PV */
 
@@ -55,6 +54,7 @@ char buffer[16];
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+void temp_change(uint8_t init_temp, uint8_t measured_temp, char* buffer);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -88,13 +88,11 @@ int main(void)
   USART_Transmit(&huart2, "Hello World\n\r");
   uint8_t temp_data = 0;
   uint8_t init_temp;
+  char buffer[16];
   BSP_GYRO_GetTemp(&init_temp);
 
-  // char display_vals[4];
-  int temp_delta = 0;
   while (1)
   {
-    // BSP_LCD_GLASS_DisplayString(string)
 
 		HAL_Delay(1000);
 		
@@ -103,14 +101,16 @@ int main(void)
 		// values are in degrees per second
 		// readings under +/- 5 are normal for the board sitting stationary
 		// if you move the board around while reading you should see a change in values
-		BSP_GYRO_GetXYZ(&pfData[0]);
-		
+		// BSP_GYRO_GetXYZ(&pfData[0]);
     BSP_GYRO_GetTemp(&temp_data);
     HAL_UART_Transmit(&huart2, (uint8_t*)buffer, sprintf(buffer, "%d\xB0%c\n\r", temp_data, 'C'), 500);
 
+    temp_change(init_temp, temp_data, buffer);
+
 		//Todo: Ex. 3.3 print your delta temp since startup to the display
 		// you are welcome to declare a function and call it here if you prefer
-  
+    BSP_LCD_GLASS_Clear();
+    BSP_LCD_GLASS_DisplayString(buffer);
   }
   /* USER CODE END 3 */
 }
@@ -194,6 +194,26 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 2 */
 
+}
+
+/**
+  * @brief Returns the temperature difference within the buffer char array
+  * @param[in] init_temp Initial temperature
+  * @param[in] measured_temp Measured temperature
+  * @param[in, out] buffer Buffer storing the string of the change in temp in C
+  * @retval None
+  */
+void temp_change(uint8_t init_temp, uint8_t measured_temp, char* buffer)
+{
+  int temp_delta = measured_temp - init_temp;
+  if (temp_delta < 0)
+  {
+    sprintf(buffer, "%d\xB0%c", measured_temp - init_temp, 'C');
+  }
+  else
+  {
+    sprintf(buffer, "%c%d\xB0%c", '+', measured_temp - init_temp, 'C');
+  }
 }
 
 /**
